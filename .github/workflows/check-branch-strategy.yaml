@@ -1,0 +1,54 @@
+name: Check Branch Strategy
+
+on:
+  pull_request:
+    branches:
+      - staging
+      - prod
+
+jobs:
+  main2staging:
+    name: main to staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.base_ref == 'staging' && github.head_ref != 'main'
+    steps:
+      - name: Update Pull Request
+        uses: actions/github-script@0.9.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const message = "mainブランチ以外からstagingブランチへのマージは許可されていません";
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
+
+      - run: |
+          exit 1
+
+  staging2prod:
+    name: staging to prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.base_ref == 'prod' && github.head_ref != 'staging'
+    steps:
+      - name: Update Pull Request
+        uses: actions/github-script@0.9.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const message = "stagingブランチ以外からprodブランチへのマージは許可されていません";
+
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
+
+      - run: |
+          exit 1
