@@ -1,0 +1,52 @@
+name: Check Branch Strategy
+
+on:
+  pull_request:
+    branches:
+      - staging
+      - prod
+
+jobs:
+  staging:
+    name: Check staging merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.base_ref == 'staging' && github.head_ref != 'main'
+    steps:
+      - name: Comment
+        uses: actions/github-script@6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const message = "stagingブランチはmainブランチからマージしてください"
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
+
+      - run: |
+          exit 1
+
+  prod:
+    name: Check prod merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.base_ref == 'prod' && github.head_ref != 'staging'
+    steps:
+      - name: Update Pull Request
+        uses: actions/github-script@6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const message = "prodブランチはstagingブランチからマージしてください"
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: message
+            })
+
+      - run: |
+          exit 1
