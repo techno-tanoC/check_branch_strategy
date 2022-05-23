@@ -1,0 +1,23 @@
+name: Check Branch Strategy
+
+on:
+  pull_request:
+
+jobs:
+  main2staging:
+    name: Check main to staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.head_ref != 'main' && github.base_ref == 'staging'
+    steps:
+      - run: |
+          exit 1
+
+  staging2prod:
+    name: Check staging to prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.head_ref != 'staging' && github.base_ref == 'prod'
+    steps:
+      - run: |
+          exit 1
